@@ -159,7 +159,7 @@ if data is None:
     st.info("No JSON provided. Using a small example so you can see the views.")
 
 # Views
-raw_tab, tree_tab, bubble_tab = st.tabs(["Raw JSON", "Tree view (collapsible)", "Bubble view (graph)"]))
+raw_tab, tree_tab, bubble_tab = st.tabs(["Raw JSON", "Tree view (collapsible)", "Bubble view (graph)"])
 
 with raw_tab:
     st.subheader("Raw JSON")
