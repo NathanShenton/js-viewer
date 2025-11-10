@@ -188,27 +188,27 @@ with tree_tab:
 
     # --- Render with an embedded D3 collapsible tree ---
     container_id = "d3tree"  # static is fine in Streamlit component iframe
-    html = f'''
+    html = """
     <!doctype html>
     <html>
     <head>
-      <meta charset="utf-8" />
+      <meta charset=\"utf-8\" />
       <style>
-        body {{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }}
-        .node circle {{ fill: #fff; stroke: #f90; stroke-width: 1.5px; }}
-        .node text {{ font-size: 12px; }}
-        .link {{ fill: none; stroke: #999; stroke-opacity: .6; stroke-width: 1.2px; }}
+        body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        .node circle { fill: #fff; stroke: #f90; stroke-width: 1.5px; }
+        .node text { font-size: 12px; }
+        .link { fill: none; stroke: #999; stroke-opacity: .6; stroke-width: 1.2px; }
       </style>
-      <script src="https://d3js.org/d3.v7.min.js"></script>
+      <script src=\"https://d3js.org/d3.v7.min.js\"></script>
     </head>
     <body>
-      <div id="{container_id}"></div>
+      <div id=\"d3tree\"></div>
       <script>
-        const data = {json.dumps(tree_data)};
-        const width = {tree_width};
-        const outerH = {tree_height};
+        const data = __DATA__;
+        const width = __WIDTH__;
+        const outerH = __HEIGHT__;
         const dx = 20, dy = 180;
-        const margin = {{top: 20, right: 120, bottom: 20, left: 120}};
+        const margin = {top: 20, right: 120, bottom: 20, left: 120};
 
         const tree = d3.tree().nodeSize([dx, dy]);
         const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x);
@@ -216,34 +216,33 @@ with tree_tab:
         const root = d3.hierarchy(data);
         root.x0 = 0; root.y0 = 0;
 
-        // collapse beyond initial depth
-        const initDepth = {initial_depth};
-        root.each(d => {{
-          if (d.depth >= initDepth && d.children) {{ d._children = d.children; d.children = null; }}
-        }});
+        const initDepth = __INIT_DEPTH__;
+        root.each(d => {
+          if (d.depth >= initDepth && d.children) { d._children = d.children; d.children = null; }
+        });
 
-        const svg = d3.select('#{container_id}').append('svg')
+        const svg = d3.select('#d3tree').append('svg')
           .attr('width', width)
           .attr('height', outerH)
-          .attr('viewBox', [-margin.left, -margin.top, width + margin.left + margin.right, outerH + margin.top + margin.bottom])
+          .attr('viewBox', [-120, -20, width + 120 + 120, outerH + 20 + 20])
           .attr('style', 'max-width: 100%; height: auto;');
 
         const gLink = svg.append('g').attr('class', 'links');
         const gNode = svg.append('g').attr('class', 'nodes');
 
         let i = 0;
-        function update(source) {{
+        function update(source) {
           const duration = 250;
           const nodes = root.descendants().reverse();
           const links = root.links();
           tree(root);
 
           let left = root, right = root;
-          root.eachBefore(n => {{ if (n.x < left.x) left = n; if (n.x > right.x) right = n; }});
-          const height = Math.max(outerH, right.x - left.x + margin.top + margin.bottom);
+          root.eachBefore(n => { if (n.x < left.x) left = n; if (n.x > right.x) right = n; });
+          const height = Math.max(outerH, right.x - left.x + 20 + 20);
           const transition = svg.transition().duration(duration)
             .attr('height', height)
-            .attr('viewBox', [-margin.left, left.x - margin.top, width + margin.left + margin.right, height]);
+            .attr('viewBox', [-120, left.x - 20, width + 120 + 120, height]);
 
           const node = gNode.selectAll('g').data(nodes, d => d.id || (d.id = ++i));
 
@@ -252,11 +251,11 @@ with tree_tab:
             .attr('transform', d => `translate(${source.y0},${source.x0})`)
             .attr('fill-opacity', 0)
             .attr('stroke-opacity', 0)
-            .on('click', (event, d) => {{
-              if (d.children) {{ d._children = d.children; d.children = null; }}
-              else {{ d.children = d._children; d._children = null; }}
+            .on('click', (event, d) => {
+              if (d.children) { d._children = d.children; d.children = null; }
+              else { d.children = d._children; d._children = null; }
               update(d);
-            }});
+            });
 
           nodeEnter.append('circle').attr('r', 5);
           nodeEnter.append('text')
@@ -270,27 +269,34 @@ with tree_tab:
             .attr('fill-opacity', 1)
             .attr('stroke-opacity', 1);
 
-          const nodeExit = node.exit().transition(transition).remove()
+          node.exit().transition(transition).remove()
             .attr('transform', d => `translate(${source.y},${source.x})`)
             .attr('fill-opacity', 0)
             .attr('stroke-opacity', 0);
 
           const link = gLink.selectAll('path').data(links, d => d.target.id);
           const linkEnter = link.enter().append('path').attr('class','link')
-            .attr('d', d => {{ const o = {{x: source.x0, y: source.y0}}; return diagonal({{source: o, target: o}}); }});
+            .attr('d', d => { const o = {x: source.x0, y: source.y0}; return diagonal({source: o, target: o}); });
           link.merge(linkEnter).transition(transition)
-            .attr('d', d => diagonal({{source: d.source, target: d.target}}));
+            .attr('d', d => diagonal({source: d.source, target: d.target}));
           link.exit().transition(transition).remove()
-            .attr('d', d => {{ const o = {{x: source.x, y: source.y}}; return diagonal({{source: o, target: o}}); }});
+            .attr('d', d => { const o = {x: source.x, y: source.y}; return diagonal({source: o, target: o}); });
 
-          root.eachBefore(d => {{ d.x0 = d.x; d.y0 = d.y; }});
-        }}
+          root.eachBefore(d => { d.x0 = d.x; d.y0 = d.y; });
+        }
 
         update(root);
       </script>
     </body>
     </html>
-    '''
+    """
+
+    html = (html
+            .replace("__DATA__", json.dumps(tree_data))
+            .replace("__WIDTH__", str(tree_width))
+            .replace("__HEIGHT__", str(tree_height))
+            .replace("__INIT_DEPTH__", str(initial_depth))
+            )
 
     components.html(html, height=tree_height, scrolling=True)
 
