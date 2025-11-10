@@ -180,11 +180,11 @@ with bubble_tab:
         else:
             # Hint about interaction
             with st.expander("What can I do here?", expanded=False):
-                st.markdown(
-                    "- Drag nodes to rearrange
+                st.markdown("""
+- Drag nodes to rearrange
 - Scroll to zoom
-- Click to select a node/edge (selection shown below)"
-                )
+- Click to select a node/edge (selection shown below)
+""")
 
             selection = streamlit_vis_network(nodes, edges, height=bubble_height, width=bubble_width)
             if selection:
