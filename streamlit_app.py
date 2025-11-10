@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 from collections import deque
+from streamlit_vis_network import streamlit_vis_network
 
 # Safe optional imports
 HAS_JSON_VIEW = False
